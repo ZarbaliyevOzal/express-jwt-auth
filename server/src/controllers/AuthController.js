@@ -2,6 +2,7 @@ const jwt = require('jsonwebtoken')
 const { object, string, email } = require('yup')
 const { knex } = require('../utils/database')
 const bcrypt = require('bcryptjs')
+const logger = require('../utils/logger')
 
 function generateToken(user) {
   return jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: 60 })
