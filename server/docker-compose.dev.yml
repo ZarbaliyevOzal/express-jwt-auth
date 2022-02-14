@@ -14,6 +14,10 @@ services:
       MYSQL_USER: root
       MYSQL_PASSWORD: password
       MYSQL_DATABASE: expressjwtauth
+      # REDIS_HOST: redis
+      # REDIS_PORT: 6379
+      # REDIS_PASSWORD: eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
+      REDIS_URL: redis://:eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81@redis:6379
   mysql:
     image: mysql:latest
     volumes:
@@ -21,6 +25,15 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: password
       MYSQL_DATABASE: expressjwtauth
+  redis:
+    image: redis:alpine
+    restart: always
+    ports:
+      - 6379:6379
+    command: redis-server --save 20 1 --loglevel warning --requirepass eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
+    volumes: 
+      - expressjwtauth-redis-data:/data
 
 volumes:
   expressjwtauth-mysql-data:
+  expressjwtauth-redis-data:
