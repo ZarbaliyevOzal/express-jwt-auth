@@ -77,11 +77,9 @@ class AuthController {
     const id = await knex('users').insert(data)
       .then((res) => res[0])
       .catch((err) => {
-        console.log(err)
+        logger.log(err)
         return res.status(500).json({ error: err.message })
       })
-
-    if (!id) return res.status(400).json({ message: 'Unsuccessfull registration' })
 
     // send welcome mail in queue
     // sign jwt tokens
