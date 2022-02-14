@@ -3,6 +3,7 @@ const { object, string, email } = require('yup')
 const { knex } = require('../utils/database')
 const bcrypt = require('bcryptjs')
 const logger = require('../utils/logger')
+const mail = require('../utils/mail')
 
 function generateToken(user) {
   return jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: 60 })
@@ -82,6 +83,13 @@ class AuthController {
       })
 
     // send welcome mail in queue
+    const info = await mail.sendMail({
+      to: data.email,
+      subject: 'Welcome',
+      text: 'Hello wecolme to amazing site.'
+    })
+    // console.log(info.messageId)
+    
     // sign jwt tokens
     const accessToken = generateToken({ id })
     const refreshToken = jwt.sign({ id }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '1h' })
