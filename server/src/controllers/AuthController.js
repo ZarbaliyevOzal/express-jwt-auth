@@ -1,5 +1,7 @@
 const jwt = require('jsonwebtoken')
 const { object, string, email } = require('yup')
+const { knex } = require('../utils/database')
+const bcrypt = require('bcryptjs')
 
 function generateToken(user) {
   return jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: 60 })
@@ -37,8 +39,8 @@ class AuthController {
           'unique', 
           'Email already in use', 
           async (value) => {
-            // check email exists in db
-            return true
+            const user = await knex('users').where('email', value.trim()).first().then((res) => res)
+            return !user 
           }  
         )
         .label('Email'),
@@ -63,11 +65,29 @@ class AuthController {
 
     if (!valid) return res.status(400).json({ errors: errors })
 
+    const data = {
+      first_name: req.body.first_name.trim(),
+      last_name: req.body.last_name.trim(),
+      email: req.body.email.trim(),
+      password: bcrypt.hashSync(req.body.password, 12)
+    }
+
     // create user
+    const id = await knex('users').insert(data)
+      .then((res) => res[0])
+      .catch((err) => {
+        console.log(err)
+        return res.status(500).json({ error: err.message })
+      })
+
+    if (!id) return res.status(400).json({ message: 'Unsuccessfull registration' })
+
     // send welcome mail in queue
     // sign jwt tokens
+    const accessToken = generateToken({ id })
+    const refreshToken = jwt.sign({ id }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '1h' })
 
-    return res.json({})
+    return res.json({ id: id, message: 'Successfully registered', accessToken, refreshToken })
   }
 
   /**

@@ -13,7 +13,7 @@ services:
       MYSQL_HOST: mysql
       MYSQL_USER: root
       MYSQL_PASSWORD: password
-      MYSQL_DB: expressjwtauth
+      MYSQL_DATABASE: expressjwtauth
   mysql:
     image: mysql:latest
     volumes:

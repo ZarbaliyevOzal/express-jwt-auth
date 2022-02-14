@@ -10,7 +10,7 @@ exports.up = function(knex) {
           table.bigIncrements();
           table.string('first_name', 45).notNullable();
           table.string('last_name', 45);
-          table.string('email', 255).notNullable();
+          table.string('email', 255).notNullable().unique();
           table.string('password', 255).notNullable();
           table.timestamp('deleted_at');
           table.timestamp('verified_at');
