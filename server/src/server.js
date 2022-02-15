@@ -4,6 +4,7 @@ const app = express()
 const cors = require('cors')
 const authRouter = require('./routes/auth')
 const postRouter = require('./routes/post')
+require('./utils/queue')
 
 app.use(express.json())
 app.use(cors())
