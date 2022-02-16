@@ -4,7 +4,11 @@ const app = express()
 const cors = require('cors')
 const authRouter = require('./routes/auth')
 const postRouter = require('./routes/post')
-require('./utils/queue')
+// const ejs = require('ejs')
+// require('./utils/queue')
+
+// app.set('view engine', ejs)
+// app.set('views', __dirname + '/views')
 
 app.use(express.json())
 app.use(cors())

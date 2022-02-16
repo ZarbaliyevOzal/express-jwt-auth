@@ -1,5 +1,5 @@
 const Bull = require('bull')
-const { sendMail } = require('./mail')
+const Mailable = require('../utils/Mailable')
 
 // detailed reference https://github.com/OptimalBits/bull/blob/master/REFERENCE.md
 
@@ -10,8 +10,8 @@ const emailQueue = new Bull('email', process.env.REDIS_URL, {
 })
 
 emailQueue.process(async (job) => {
-  const { to, subject, text } = job.data
-  return sendMail({ to, subject, text })
+  const { to, subject, html } = job.data
+  return Mailable.send({ to, subject, html })
 })
 
 module.exports = { emailQueue }
