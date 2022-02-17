@@ -13,6 +13,7 @@ const postRouter = require('./routes/post')
 app.use(express.json())
 app.use(cors())
 app.use('/', function(req, res, next) {
+  if (req.originalUrl.includes('/verify-email/')) return next()
   if (req.headers['content-type'] && req.headers['content-type'] !== 'application/json') 
     return res.status(400).send('Headers must contain content-type: application/json')
   if (req.headers['accept'] !== 'application/json') 
