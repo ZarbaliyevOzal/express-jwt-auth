@@ -133,7 +133,8 @@ class AuthController {
     if (!user) res.status(404).json({ message: 'User not found' })
     // validate token
     jwt.verify(req.params.token, process.env.ACCESS_TOKEN_SECRET, async (err, data) => {
-      if (err) return res.status(401).json({ err: err.message })
+      if (err) return res.status(401).json({ message: 'Invalid token' })
+      if (data.id !== user.id) res.status(401).json({ message: 'Invalid token' })
       await knex('users').where('id', req.params.id)
         .update({ verified_at: new Date() })
       res.json({ message: 'Your account verified. Thanks' })
