@@ -10,21 +10,36 @@ function generateToken(user) {
   return jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: 60 })
 }
 
-let refreshTokens = []
-
 class AuthController {
   /**
    * Login
    * @param {*} req 
    * @param {*} res 
    */
-  login(req, res) {
-    const { email, password } = req.body
-    const user = { email }
+  async login(req, res) {
+    const schema = object({
+      email: string().email().required(),
+      password: string().required()
+    })
+    let errors = {}
+    let valid = false
+    await schema.validate({ email: req.body.email?.trim(), password: req.body.password })
+      .then(() => valid = true)
+      .catch((err) => err.inner.map((inn) => errors[inn.path] = inn.errors))
+
+    if (!valid) return res.status(400).json({ errors: errors })
+
+    const user = await knex('users').where('email', req.body.email.trim()).first().then(res)
+
+    if (!user) return res.status(400).json({ message: 'Email or password wrong' })
+
+    if (!bcrypt.compare(req.body.password, user.password)) 
+      return res.status(400).json({ message: 'Email or password wrong' })
+
     // assign access token
-    const accessToken = generateToken(user)
-    const refreshToken = jwt.sign(user, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '1h' })
-    // refreshTokens.push(refreshToken)
+    const accessToken = generateToken({ id: user.id })
+    const refreshToken = jwt.sign({ id: user.id }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '1h' })
+    
     res.json({ accessToken, refreshToken })
   }
 
@@ -151,7 +166,7 @@ class AuthController {
     if (!user) return res.status(404).json({ message: 'User not found' })
     if (user.verified_at) return res.status(400).json({ message: 'Email already verified' })
     const verificationToken = jwt.sign({ id: user.id }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: 3600 })
-    await (new VerificationEmail(verificationToken, { id })).queue(user.email)
+    await (new VerificationEmail(verificationToken, { id: user.id })).queue(user.email)
     return res.json({ message: 'Verification link was sent to your email address' })
   }
 }
