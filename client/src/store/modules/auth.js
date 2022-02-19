@@ -1,4 +1,7 @@
 import { parseJwt } from '../../helpers/index'
+import { useToast } from 'vue-toastification'
+
+const toast = useToast()
 
 const Auth = {
   namespaced: true,
@@ -54,9 +57,14 @@ const Auth = {
           .then((res) => {
             commit('SET_ACCESS_TOKEN', res.data.accessToken)
             commit('SET_REFRESH_TOKEN', res.data.refreshToken)
+            // success notification
+            toast.success(${res.data.message})
             resolve(res.data)
           })
-          .catch((err) => reject(err))
+          .catch((err) => {
+            toast.warning(err.response.data.message)
+            reject(err)
+          })
       })
   },
   getters: {

@@ -1,9 +1,12 @@
 <script setup>
-import { ref, watch } from 'vue'
+import { ref, watch, getCurrentInstance } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStore } from 'vuex'
 import { object, string, reach, ref as YupRef } from 'yup'
-import BaseButton from '../../components/BaseButton.vue';
+import BaseButton from '../../components/BaseButton.vue'
+import { useToast } from 'vue-toastification'
+
+const toast = useToast()
 
 const router = useRouter()
 
@@ -88,8 +91,7 @@ const submit = async () => {
   }
 
   store.dispatch('auth/signup', data)
-    .then((res) => {
-      console.log(res.message)
+    .then(() => {
       isSubmitting.value = false
       router.push({ name: 'Home' })
     })
