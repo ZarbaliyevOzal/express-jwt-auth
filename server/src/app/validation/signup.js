@@ -2,7 +2,7 @@ const { object, string, ref } = require('yup')
 const { knex } = require('../../utils/database')
 
 module.exports = object({
-  first_name: string().required().max(2).label('First name'),
+  first_name: string().required().max(5).label('First name'),
   last_name: string().nullable().max(45).label('Last name'),
   email: string().required().email().max(255)
     .test(
