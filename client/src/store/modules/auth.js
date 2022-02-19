@@ -52,7 +52,9 @@ const Auth = {
       new Promise((resolve, reject) => {
         axios.post('/signup', payload)
           .then((res) => {
-
+            commit('SET_ACCESS_TOKEN', res.data.accessToken)
+            commit('SET_REFRESH_TOKEN', res.data.refreshToken)
+            resolve(res.data)
           })
           .catch((err) => reject(err))
       })

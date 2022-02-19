@@ -2,7 +2,8 @@
 import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStore } from 'vuex'
-import { object, string, reach } from 'yup'
+import { object, string, reach, ref as YupRef } from 'yup'
+import BaseButton from '../../components/BaseButton.vue';
 
 const router = useRouter()
 
@@ -14,7 +15,7 @@ const schema = object({
   email: string().required().email().max(255).label('Email'),
   password: string().required().min(6).max(12).label('Password'),
   password_confirmation: string().required().min(6).max(12)
-    .test('password_confirmation', 'Retype password does not match password', (value) => value === password.value)
+    .oneOf([ YupRef('password') ], 'Password must match')
     .label('Retype password')
 })
 
@@ -88,11 +89,16 @@ const submit = async () => {
 
   store.dispatch('auth/signup', data)
     .then((res) => {
+      console.log(res.message)
       isSubmitting.value = false
       router.push({ name: 'Home' })
     })
     .catch((err) => {
-      console.log(err)
+      if (err.response.data.errors) {
+        for (let p in err.response.data.errors) {
+          schemaError.value[p] = err.response.data.errors[p][0]
+        }
+      }
       isSubmitting.value = false
     })
 }
@@ -192,7 +198,9 @@ const submit = async () => {
         </div>
 
         <div>
-          <button type="submit" @click.prevent="submit" class="btn"> Sign in </button>
+          <BaseButton @click.prevent="submit" :disabled="isSubmitting" :loading="isSubmitting"> 
+            Submit 
+          </BaseButton>
         </div>
       </form>
 
