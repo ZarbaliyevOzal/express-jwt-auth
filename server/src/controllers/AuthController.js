@@ -5,6 +5,7 @@ const bcrypt = require('bcryptjs')
 const logger = require('../utils/logger')
 // const { emailQueue } = require('../utils/queue')
 const VerificationEmail = require('../app/mail/VerificationEmail')
+const signupSchema = require('../app/validation/signup')
 
 function generateToken(user) {
   return jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: 60 })
@@ -49,29 +50,10 @@ class AuthController {
    * @param {*} res 
    */
   async signup(req, res) {
-    const schema = object({
-      first_name: string().required().max(5).label('First name'),
-      last_name: string().nullable().max(45).label('Last name'),
-      email: string().required().email().max(255)
-        .test(
-          'unique', 
-          'Email already in use', 
-          async (value) => {
-            const user = await knex('users').where('email', value.trim()).first().then((res) => res)
-            return !user 
-          }  
-        )
-        .label('Email'),
-      password: string().required().min(6).max(12).label('Password'),
-      password_confirmation: string().required().min(6).max(12)
-        .test('password_confirmation', 'Retype password does not match password', (value) => value === req.body.password)
-        .label('Retype password')
-    })
-
-    let valid = false
     let errors = {}
+    let valid = false
 
-    await schema.validate({
+    await signupSchema.validate({
       first_name: req.body.first_name?.trim(),
       last_name: req.body.last_name?.trim(),
       email: req.body.email?.trim(),
@@ -79,20 +61,24 @@ class AuthController {
       password_confirmation: req.body.password_confirmation?.trim(),
     }, { abortEarly: false })
       .then(() => valid = true)
-      .catch((err) => err.inner.map((inn) => errors[inn.path] = inn.errors))
+      .catch((err) => {
+        err.inner.map((inn) => errors[inn.path] = inn.errors)
+      })
 
-    if (!valid) return res.status(400).json({ errors: errors })
+    if (!valid) return res.status(400).json({ errors: errors, message: 'Validation errors' }) 
 
     const data = {
       first_name: req.body.first_name.trim(),
-      last_name: req.body.last_name.trim(),
+      last_name: req.body.last_name?.trim(),
       email: req.body.email.trim(),
       password: bcrypt.hashSync(req.body.password, 12)
     }
 
+    let id = null
+    
     // create user
-    const id = await knex('users').insert(data)
-      .then((res) => res[0])
+    await knex('users').insert(data)
+      .then((res) => id = res[0])
       .catch((err) => {
         logger.log(err)
         return res.status(500).json({ error: err.message })
