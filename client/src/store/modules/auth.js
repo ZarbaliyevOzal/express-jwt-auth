@@ -58,7 +58,7 @@ const Auth = {
             commit('SET_ACCESS_TOKEN', res.data.accessToken)
             commit('SET_REFRESH_TOKEN', res.data.refreshToken)
             // success notification
-            toast.success(${res.data.message})
+            toast.success(res.data.message)
             resolve(res.data)
           })
           .catch((err) => {
