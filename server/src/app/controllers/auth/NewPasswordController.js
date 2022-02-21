@@ -50,6 +50,9 @@ class NewPasswordController {
         logger.error(err.message)
       })
 
+    // delete password record
+    await knex('password_resets').where('token', req.params.token).delete()
+
     return res.json({ message: 'Password was set successfully' })
   }
 }

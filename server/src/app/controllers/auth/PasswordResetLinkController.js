@@ -28,7 +28,6 @@ class PasswordResetLinkController {
 
     return res.json({ 
       message: 'Password reset link was sent to email address',
-      token, 
       email 
     })
   }
