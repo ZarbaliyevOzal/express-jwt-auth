@@ -65,6 +65,31 @@ const Auth = {
             toast.warning(err.response.data.message)
             reject(err)
           })
+      }),
+    forgotPassword: (_, payload) => 
+      new Promise((resolve, reject) => {
+        axios.post('/password-reset', payload)
+          .then((res) => {
+            toast.success(res.data.message)
+            resolve(res.data)
+          })
+          .catch((err) => {
+            toast.warning(err.response.data.message)
+            reject(err)
+          })
+      }),
+    passwordReset: (_, payload) =>
+      new Promise((resolve, reject) => {
+        const { password, password_confirmation } = payload
+        axios.post(`/password-reset/${payload.token}`, { password, password_confirmation })
+          .then((res) => {
+            toast.success(res.data.message)
+            resolve(res.data)
+          })
+          .catch((err) => {
+            toast.warning(err.response.data.message)
+            reject(err)
+          })
       })
   },
   getters: {

@@ -1,20 +1,70 @@
 <script setup>
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
-import { useStore } from 'vuex';
+import { ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
+import { useStore } from 'vuex'
+import { object, string, ref as yupRef, reach } from 'yup';
+import BaseButton from '../../components/BaseButton.vue';
 
 const router = useRouter()
+
 const store = useStore()
 
-const email = ref('zarbaliyevozal@gmail.com')
+const token = router.currentRoute.value.params.token
 
-const password = ref('secret')
+const email = router.currentRoute.value.query.email
+
+const schema = object({
+  password: string().required().min(6).max(12).label('Password'),
+  password_confirmation: string().required().min(6).max(12)
+    // .oneOf([ yupRef('password'), null ], 'Passwords do not match')
+    .test('confirmation', 'Passwords do not match', (value) => password.value === value)
+    .label('Password confirmation')
+})
+
+const error = ref({})
+
+const password = ref('')
+watch(password, (v) => {
+  reach(schema, 'password').validate(v)
+    .then(() => delete error.value.password)
+    .catch((err) => error.value.password = err.message)
+})
+
+const password_confirmation = ref('')
+watch(password_confirmation, (v) => {
+  reach(schema, 'password_confirmation').validate(v)
+    .then(() => delete error.value.password_confirmation)
+    .catch((err) => error.value.password_confirmation = err.message)
+})
+
+const isSubmitting = ref(false)
 
 const submit = async () => {
-  const data = { email: email.value, password: password.value }
-  store.dispatch('auth/login', data)
-    .then(() => router.push({ name: 'Home' }))
-    .catch((err) => console.log(err.message))
+  isSubmitting.value = true
+  error.value = {}
+  let valid = false
+  await schema
+    .validate({ password: password.value, password_confirmation: password_confirmation.value }, { abortEarly: false })
+    .then(() => valid = true)
+    .catch((err) => {
+      err.inner.map((inn) => error.value[inn.path] = inn.errors[0])
+    })
+  if (!valid) {
+    isSubmitting.value = false
+    return
+  }
+
+  await store.dispatch('auth/passwordReset', { 
+      password: password.value, 
+      password_confirmation: password_confirmation.value ,
+      token
+    })
+    .then(() => {
+      router.push({ name: 'SignIn' })
+    })
+    .catch((err) => err)
+
+  isSubmitting.value = false
 }
 </script>
 
@@ -22,11 +72,9 @@ const submit = async () => {
   <div class="min-h-full flex flex-col justify-center py-12 sm:px-6 lg:px-8">
     <div class="sm:mx-auto sm:w-full sm:max-w-md">
       <img class="mx-auto h-12 w-auto" src="https://tailwindui.com/img/logos/workflow-mark-indigo-600.svg" alt="Workflow">
-      <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">Sign in to your account</h2>
-      <p class="mt-2 text-center text-sm text-gray-600">
-        Or
-        <a href="#" class="font-medium text-indigo-600 hover:text-indigo-500"> start your 14-day free trial </a>
-      </p>
+      <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
+        Reset your password
+      </h2>
     </div>
 
     <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
@@ -35,54 +83,49 @@ const submit = async () => {
           <div>
             <label for="email" class="block text-sm font-medium text-gray-700"> Email address </label>
             <div class="mt-1">
-              <input 
-                id="email" 
-                name="email" 
+              <input  
                 type="email" 
-                autocomplete="email" 
                 class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                v-model="email"  
+                readonly
+                disabled
+                :value="email"
               >
             </div>
           </div>
 
           <div>
             <label for="password" class="block text-sm font-medium text-gray-700"> Password </label>
-            <div class="mt-1">
-              <input 
-                id="password" 
-                name="password" 
-                type="password" 
-                autocomplete="current-password" 
-                required 
-                class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                v-model="password"
-              >
-            </div>
+            <input type="password"
+              id="password"
+              name="password"
+              class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              v-model="password"
+            >
+            <div class="text-red-600 text-sm" v-if="error.password">{{ error.password }}</div>
           </div>
 
-          <div class="flex items-center justify-between">
-            <div class="flex items-center">
-              <input id="remember-me" name="remember-me" type="checkbox" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
-              <label for="remember-me" class="ml-2 block text-sm text-gray-900"> Remember me </label>
-            </div>
-
-            <div class="text-sm">
-              <router-link :to="{ name: 'ForgotPassword' }" class="font-medium text-indigo-600 hover:text-indigo-500">
-                Forgot your password?
-              </router-link>
+          <div>
+            <label for="password-confirmation" class="block text-sm font-medium text-gray-700"> 
+              Confirm new password 
+            </label>
+            <input 
+              type="password"
+              id="password-confirmation"
+              name="password_confirmation"
+              class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              v-model="password_confirmation"
+            >
+            <div class="text-red-600 text-sm" v-if="error.password_confirmation">
+              {{ error.password_confirmation }}
             </div>
           </div>
 
           <div>
-            <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Sign in</button>
+            <BaseButton type="submit" class="btn" @click.prevent="submit" :disabled="isSubmitting" :loading="isSubmitting">
+              Submit
+            </BaseButton>
           </div>
         </form>
-
-        <div class="mt-6 text-center text-sm">
-          Haven't got account? 
-          <router-link :to="{ name: 'SignUp' }" class="text-indigo-600 hover:text-indigo-500 font-medium">Sign up</router-link>
-        </div>
 
         <div class="mt-6">
           <div class="relative">
@@ -126,52 +169,4 @@ const submit = async () => {
       </div>
     </div>
   </div>
-
-
-
-
-  <!-- <div class="flex items-center justify-center min-h-screen bg-gray-100">
-    <div class="px-8 py-6 mt-4 text-left bg-white shadow-lg">
-      <div class="flex justify-center">
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-20 h-20 text-blue-600" fill="none" viewBox="0 0 24 24"
-          stroke="currentColor">
-          <path d="M12 14l9-5-9-5-9 5 9 5z" />
-          <path
-            d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" />
-        </svg>
-      </div>
-      <h3 class="text-2xl font-bold text-center">Login to your account</h3>
-      <form action="">
-        <div class="mt-4">
-          <div>
-            <label class="block" for="email">Email</label>
-            <input type="text" placeholder="Email"
-              class="w-full px-4 py-2 mt-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-600"
-              v-model="email"
-            >
-            <span class="text-xs tracking-wide text-red-600">Email field is required</span>
-          </div>
-          <div class="mt-4">
-            <label class="block">Password</label>
-            <input type="password" placeholder="Password"
-              class="w-full px-4 py-2 mt-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-600"
-              v-model="password"
-            >
-          </div>
-          <div class="flex items-baseline justify-between">
-            <button class="px-6 py-2 mt-4 text-white bg-blue-600 rounded-lg hover:bg-blue-900"
-              @click.prevent="submit"
-            >
-              Login
-            </button>
-            <router-link :to="{ name: 'ForgotPassword' }" class="text-sm text-blue-600 hover:underline">
-              Forgot your password?
-            </router-link>
-          </div>
-        </div>
-      </form>
-    </div>
-  </div> -->
 </template>

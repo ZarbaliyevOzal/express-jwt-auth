@@ -188,23 +188,19 @@ const submit = async () => {
           <div v-if="schemaError.password_confirmation" class="text-red-600 text-sm">{{ schemaError.password_confirmation }}</div>
         </div>
 
-        <div class="flex items-center justify-between">
-          <div class="flex items-center">
-            <input id="remember-me" name="remember-me" type="checkbox" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
-            <label for="remember-me" class="ml-2 block text-sm text-gray-900"> Remember me </label>
-          </div>
-
-          <div class="text-sm">
-            <a href="#" class="font-medium text-indigo-600 hover:text-indigo-500"> Forgot your password? </a>
-          </div>
-        </div>
-
         <div>
           <BaseButton @click.prevent="submit" :disabled="isSubmitting" :loading="isSubmitting"> 
             Submit 
           </BaseButton>
         </div>
       </form>
+
+      <div class="mt-6 text-sm text-center text-gray-700">
+        Already have an account?
+        <router-link :to="{ name: 'SignIn' }" class="font-medium text-indigo-600 hover:text-indigo-500">
+          Sign in
+        </router-link>
+      </div>
 
       <div class="mt-6">
         <div class="relative">
