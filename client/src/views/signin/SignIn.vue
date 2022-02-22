@@ -11,6 +11,7 @@ const email = ref('zarbaliyevozal@gmail.com')
 const password = ref('secret')
 
 const submit = async () => {
+  console.log('submit')
   const data = { email: email.value, password: password.value }
   store.dispatch('auth/login', data)
     .then(() => router.push({ name: 'Home' }))
@@ -75,7 +76,13 @@ const submit = async () => {
           </div>
 
           <div>
-            <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Sign in</button>
+            <button 
+              type="submit" 
+              class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              @click.prevent="submit"
+            >
+              Sign in
+            </button>
           </div>
         </form>
 
