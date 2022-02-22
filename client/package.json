@@ -8,6 +8,8 @@
     "lint": "eslint --ext .js,.vue src --fix"
   },
   "dependencies": {
+    "@headlessui/vue": "^1.5.0",
+    "@heroicons/vue": "^1.0.5",
     "@tailwindcss/forms": "^0.4.0",
     "axios": "^0.25.0",
     "vee-validate": "^4.5.8",
