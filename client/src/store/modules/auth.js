@@ -7,7 +7,8 @@ const Auth = {
   namespaced: true,
   state: () => ({
     accessToken: localStorage.getItem('accessToken') ?? null,
-    refreshToken: localStorage.getItem('refreshToken') ?? null
+    refreshToken: localStorage.getItem('refreshToken') ?? null,
+    user: {}
   }),
   mutations: {
     LOGOUT: (state) => {
@@ -24,6 +25,9 @@ const Auth = {
       localStorage.setItem('refreshToken', payload)
       state.refreshToken = payload
     },
+    ME: (state, payload) => {
+      state.user = payload.user
+    }
   },
   actions: {
     login: ({ commit }, payload) => 
@@ -90,13 +94,26 @@ const Auth = {
             toast.warning(err.response.data.message)
             reject(err)
           })
+      }),
+    me: ({ commit, state }) => 
+      new Promise((resolve, reject) => {
+        if (!state.accessToken) return reject()
+        axios.get('/api/v1/me')
+          .then((res) => {
+            commit('ME', res.data)
+            resolve(res.data)
+          })
+          .catch((err) => {
+            reject(err)
+          })
       })
   },
   getters: {
     isAuthenticated: (state) => !!state.accessToken,
     accessToken: (state) => state.accessToken,
     refreshToken: (state) => state.refreshToken,
-    decodedAccessToken: (state) => state.accessToken ? parseJwt(state.accessToken) : null
+    decodedAccessToken: (state) => state.accessToken ? parseJwt(state.accessToken) : null,
+    user: (state) => state.user
   }
 }
 
