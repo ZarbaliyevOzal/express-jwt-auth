@@ -15,7 +15,9 @@ app.use('/', function(req, res, next) {
   next()
 })
 
-app.use('/', routes)
+app.use('/', routes.auth)
+app.use('/', routes.profile)
+app.use('/', routes.post)
 
 app.listen(4000, () => {
   console.log('listening on port 4000')
