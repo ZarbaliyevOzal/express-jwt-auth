@@ -52,9 +52,15 @@ class RegisterController {
 
     await (new VerificationEmail(verificationToken, { id })).queue(data.email)
 
+    const user = await knex('users')
+      .select([ 'id', 'email', 'first_name', 'last_name', 'verified_at', 'deleted_at', 'created_at', 'updated_at' ])
+      .where('id', id)
+      .first()
+      .then((res) => res)
+
     // sign jwt tokens
-    const accessToken = jwt.sign({ id }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: 60 })
-    const refreshToken = jwt.sign({ id }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '1h' })
+    const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: 60 })
+    const refreshToken = jwt.sign(user, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '1h' })
 
     return res.json({ id: id, message: 'Successfully registered', accessToken, refreshToken })
   }

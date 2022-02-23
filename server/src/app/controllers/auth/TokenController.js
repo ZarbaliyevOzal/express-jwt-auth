@@ -10,11 +10,16 @@ class TokenController {
   store(req, res) {
     const refreshToken = req.body.token
     if (!refreshToken) return res.sendStatus(401)
-    // if (!refreshTokens.includes(refreshToken)) return res.sendStatus(403)
-    jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
+
+    jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, async (err, data) => {
       if (err) return res.sendStatus(401)
-      const accessToken = jwt.sign({ id: user.id }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: 60 })
-      const refreshToken = jwt.sign({email: user.email}, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '1h' })
+      const user = await knex('users')
+        .select([ 'id', 'email', 'first_name', 'last_name', 'verified_at', 'deleted_at', 'created_at', 'updated_at' ])
+        .where('id', data.id)
+        .first()
+        .then((res) => res)
+      const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: 60 })
+      const refreshToken = jwt.sign(user, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '1h' })
       return res.json({ accessToken, refreshToken })
     })
   }

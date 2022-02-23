@@ -8,18 +8,18 @@ const TokenController = require('../app/controllers/auth/TokenController')
 const VerifyEmailController = require('../app/controllers/auth/VerifyEmailController')
 const VerificationLinkController = require('../app/controllers/auth/VerificationLinkController')
 
-router.post('/login', LoginController.store)
+router.post('/api/v1/login', LoginController.store)
 
-router.post('/signup', RegisterController.store)
+router.post('/api/v1/signup', RegisterController.store)
 
-router.post('/token', TokenController.store)
+router.post('/api/v1/token', TokenController.store)
 
-router.get('/verify-email/:id/:token', VerifyEmailController.store)
+router.get('/api/v1/verify-email/:id/:token', VerifyEmailController.store)
 
-router.post('/resend-verification-link', auth, VerificationLinkController.store)
+router.post('/api/v1/resend-verification-link', auth, VerificationLinkController.store)
 
-router.post('/password-reset', PasswordResetLinkController.store)
+router.post('/api/v1/password-reset', PasswordResetLinkController.store)
 
-router.post('/password-reset/:token', NewPasswordController.store)
+router.post('/api/v1/password-reset/:token', NewPasswordController.store)
 
 module.exports = router

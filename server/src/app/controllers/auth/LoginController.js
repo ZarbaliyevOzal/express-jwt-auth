@@ -31,9 +31,20 @@ class LoginController {
     if (!bcrypt.compare(req.body.password, user.password)) 
       return res.status(400).json({ message: 'Email or password wrong' })
 
+    const payload = {
+      id: user.id,
+      email: user.email,
+      first_name: user.first_name,
+      last_name: user.last_name,
+      verified_at: user.verified_at,
+      deleted_at: user.deleted_at,
+      created_at: user.created_at,
+      updated_at: user.updated_at
+    }
+
     // assign access token
-    const accessToken = jwt.sign({ id: user.id }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: 60 })
-    const refreshToken = jwt.sign({ id: user.id }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '1h' })
+    const accessToken = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, { expiresIn: 60 })
+    const refreshToken = jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '1h' })
     
     res.json({ accessToken, refreshToken })
   }
