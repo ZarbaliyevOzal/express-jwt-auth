@@ -14,7 +14,8 @@ exports.up = function(knex) {
           table.string('password', 255).notNullable();
           table.timestamp('deleted_at');
           table.timestamp('verified_at');
-          table.timestamps();
+          table.timestamp('created_at').defaultTo(knex.fn.now())
+          table.timestamp('updated_at').defaultTo(knex.fn.now())
         })
           .then(() => console.log('users table created'))
       }
