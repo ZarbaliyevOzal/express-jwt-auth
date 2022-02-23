@@ -2,13 +2,7 @@ require('dotenv').config({ path: `${__dirname}/../.env` })
 const express = require('express')
 const app = express()
 const cors = require('cors')
-const authRouter = require('./routes/auth')
-const postRouter = require('./routes/post')
-// const ejs = require('ejs')
-// require('./utils/queue')
-
-// app.set('view engine', ejs)
-// app.set('views', __dirname + '/views')
+const routes = require('./routes/index')
 
 app.use(express.json())
 app.use(cors())
@@ -21,8 +15,7 @@ app.use('/', function(req, res, next) {
   next()
 })
 
-app.use('/', authRouter)
-app.use('/', postRouter)
+app.use('/', routes)
 
 app.listen(4000, () => {
   console.log('listening on port 4000')
