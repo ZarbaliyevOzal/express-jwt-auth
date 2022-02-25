@@ -1,22 +1,18 @@
 <script setup>
 import { Menu, MenuButton, MenuItems, MenuItem } from '@headlessui/vue'
 import { ChevronDownIcon } from '@heroicons/vue/solid'
-import { computed, onBeforeMount } from 'vue'
+import { computed } from 'vue'
 import { useStore } from 'vuex'
 import { LogoutIcon, PencilAltIcon } from '@heroicons/vue/outline'
 
 const store = useStore()
 
-onBeforeMount(() => {
-  store.dispatch('auth/me').then((res) => res).catch((err) => console.log(err))
-})
-
-const user = computed(() => store.getters['auth/user'])
+const token = computed(() => store.getters['auth/decodedAccessToken'])
 
 const label = computed(() => {
-  if (!user.value.first_name) return 'account'
-  if (user.value.first_name.length > 5) return user.value.first_name.slice(0, 5) + '...'
-  return user.value.first_name
+  if (!token.value.first_name) return 'account'
+  if (token.value.first_name.length > 5) return token.value.first_name.slice(0, 5) + '...'
+  return token.value.first_name
 })
 
 const signOut = () => {
@@ -55,7 +51,7 @@ const signOut = () => {
         <div class="px-1 py-1 text-sm">
           <ul class="ml-7 px-2 py-2"> 
             <li class="block">Signed is as:</li>
-            <li class="block break-words" :title="user.email"> {{ user.email }} </li>
+            <li class="block break-words" :title="token.email"> {{ token.email }} </li>
           </ul>
         </div>
 

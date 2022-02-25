@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken')
+const { knex } = require('../../../utils/database')
 
 class TokenController {
   /**
@@ -7,7 +8,7 @@ class TokenController {
    * @param {*} res 
    * @returns 
    */
-  store(req, res) {
+  async store(req, res) {
     const refreshToken = req.body.token
     if (!refreshToken) return res.sendStatus(401)
 

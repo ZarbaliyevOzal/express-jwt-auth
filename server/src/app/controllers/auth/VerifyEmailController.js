@@ -16,7 +16,8 @@ class VerifyEmailController {
       if (data.id !== user.id) res.status(401).json({ message: 'Invalid token' })
       await knex('users').where('id', req.params.id)
         .update({ verified_at: new Date() })
-      return res.json({ message: 'Your account verified. Thanks' })
+      // return res.json({ message: 'Your account verified. Thanks' })
+      return res.redirect('http://localhost:3000')
     })
   }
 }

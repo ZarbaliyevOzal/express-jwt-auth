@@ -18,7 +18,7 @@ class PasswordReset {
   }
 
   build() {
-    const url = `${process.env.APP_URL}/password-reset/${this.token}?email=${this.email}`
+    const url = `${process.env.APP_URL}/api/v1/password-reset/${this.token}?email=${this.email}`
     const str = fs.readFileSync(path.join(__dirname, '../../views/email/passwordReset.ejs'), 'utf-8')
     const content = ejs.render(str, { url })
     return this.layout(content)
